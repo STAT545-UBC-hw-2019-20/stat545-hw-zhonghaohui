@@ -4,3 +4,6 @@ Hi everyone! Welcome to this repository.This is used for my homework assignments
 
 ## About Me
 😉 My name is Richard, a first year master student of **Biochemistry and Molecular Biology**. I am studying viruses and hopefully I am going to integrate statistic tools and bioinformatic methods into my research. Honestly I don't have much experience with coding, but I am really excited to take this course and receice proper training.
+
+
+\*literal asterisks\*
