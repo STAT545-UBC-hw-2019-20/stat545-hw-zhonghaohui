@@ -1,0 +1,90 @@
+---
+title: "Gapminder Exploration"
+author: "Haohui Zhong"
+date: "2019/9/17"
+output: 
+  github_document:
+  keep_md: true
+  toc: true
+  theme: cerulean
+---
+
+## _Outline_
+
+In this document, we are going to do some data exploration with the `gapminder` dataset.
+
+### Load Packages
+
+In order to access the `gapminder` dataset, we need to load the `gapminder` package.
+
+```{r load,warning=FALSE,echo=FALSE}
+library(gapminder)
+library(rmarkdown)
+library(tibble)
+library(DT)
+```
+
+By executing the following chunks, we will be able to have some basic ideas of the `gapminder` dataset.
+
+* What does this dataset contain?
+
+Obtaining such information can be done by checking out the description excerpt of the dataset.
+
+```{r,echo=FALSE,warning=FALSE}
+?gapminder
+
+```
+
+This excerpt is very resourceful for peopole to learn more about the dataset. As shown, details for life expectancy, GDP per capita, and population by country are provided within the dataset. 
+
+The excerpt also includes brief instructions on how to further explore `gapminder` in the `**Examples**' section. For instance, we can find out:
+
+> a general description of gapminder
+
+```{r,echo=FALSE,warning=FALSE}
+summary(gapminder)
+
+```
+
+> how many **rows** and **columns** gapminder has
+
+```{r,echo=FALSE,warning=FALSE}
+nrow(gapminder)
+ncol(gapminder)
+```
+
+etc.
+
+****
+
+After we finish running all those codes, we should be familiar with the dataset. The next step is to perform data explorations at a higher level and do some transformations.
+
+## _Data Analysis_
+
+### Maximum, minimun, mean, range
+
+We can take a closer look into different **variables**. Take `GDP per capita` as an example:
+
+```{r,echo=FALSE,warning=FALSE}
+summary(gapminder$gdpPercap)
+```
+
+### Selecting certain values and filtering data
+
+We have already learned that this is a large dataset. Therefore, inevitably we need to break it down and select or filter data based on certain criteria. 
+
+> Suppose that we are carrying out **continent-specific** studies and interested in **Oceania**.
+
+```{r,echo=FALSE,warning=FALSE}
+gapminder[gapminder$continent == "Oceania", ]
+```
+
+We can also extract data of certain year, country, etc.
+
+### Visualizing the dataset
+
+Graphics make data more readable and show messages such as trends, variances and abundance directly. For example, we can show how GDP per capita of all countries changes over time.
+
+```{r, echo=FALSE,warning=FALSE}
+plot(gdpPercap ~ year, gapminder)
+```
