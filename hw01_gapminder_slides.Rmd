@@ -1,0 +1,92 @@
+---
+title: "Gapminder Exploration"
+author: "Haohui Zhong"
+date: "2019/9/17"
+output: ioslides_presentation
+---
+```{r load,warning=FALSE,echo=FALSE}
+library(gapminder)
+library(tibble)
+library(DT)
+```
+
+## Chapters
+
+<br>
+
+1. Outline of dataset `gapminder`
+
+2. Data analysis
+
++ Maximum, minimun, mean, range
+
++ Filtering data
+
++ Visualizing data
+
+
+## An Outline of dataset `gapminder`
+
+- **a general description of gapminder**
+```{r,echo=FALSE,warning=FALSE}
+summary(gapminder)
+
+```
+
+- **Some basic information{.smaller}**
+
+How many **rows** does gapminder have?
+
+```{r,echo=FALSE,warning=FALSE}
+nrow(gapminder)
+
+```
+
+How many **columns** does gapminder have?
+
+```{r,echo=FALSE,warning=FALSE}
+ncol(gapminder)
+
+```
+
+What variables are in this dataset?
+
+```{r, comment = NA}
+colnames(gapminder)
+```
+
+## Data analysis
+
+> Maximum, minimun, mean, range
+
+Take `GDP per capita` as an example:
+
+```{r,echo=FALSE,warning=FALSE}
+summary(gapminder$gdpPercap)
+```
+
+## Data analysis {.smaller}
+> Filtering data
+
+Suppose that we are carrying out **country-specific** studies and interested in **Australia**. We need to break down the dataset and collect observations of interest.
+```{r,echo=FALSE,warning=FALSE}
+gapminder[gapminder$country == "Australia", ]
+```
+
+## Data analysis {.smaller}
+
+> Visualizing the dataset
+
+The graphic below shows how GDP per capita of all countries changes over time.
+
+```{r, echo=FALSE,warning=FALSE}
+plot(gdpPercap ~ year, gapminder)
+```
+
+## 
+<div align="center">
+
+Thanks for your attention
+
+
+
