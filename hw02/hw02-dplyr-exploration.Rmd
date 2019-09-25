@@ -1,0 +1,220 @@
+---
+title: "hw02_dplyr_exploration"
+author: "Haohui Zhong"
+date: "2019/9/23"
+output:
+  pdf_document: default
+  html_document: default
+always_allow_html: yes
+---
+
+# **Outline**
+
+When exploring datasets, `dplyr` commands can be a very useful tool. Here, we would be focusing on the `gapminder` dataset. In order to do so, we need to load the `gapminder` package as well as the `tidyverse` package.
+
+```{r load,warning=FALSE,echo=FALSE}
+library(gapminder)
+library(tidyverse)
+```
+
+<br>
+
+# Exercise 1: Basic `dplyr`
+
+## 1.1 `filter()`
+
+_Requirement:_ 
+Use `filter()` to subset the `gapminder` data to three countries of our choice in the 1970s. Here I choose **China**, **Chad** and **Chile**.
+
+```{r}
+gapminder %>%
+  filter(year > 1969 & year < 1980) %>% 
+  filter(country == "China" | country == "Chad" | country == "Chile") %>% 
+  knitr::kable()
+```
+
+## 1.2 `select()`
+
+_Requirement:_
+Use the pipe operator '%>%' to select '“country”' and '“gdpPercap”' from our filtered dataset in _1.1_.
+
+```{r}
+gapminder %>%
+  filter(year > 1969 & year < 1980) %>% 
+  filter(country == "China" | country == "Chad" | country == "Chile") %>%
+  select(country,gdpPercap) %>% 
+  knitr::kable()
+```
+
+## 1.3 `mutate()`
+
+_Requirement:_
+Filter `gapminder` to all entries that have experienced a drop in life expectancy and include a new variable that’s the increase in life expectancy in the tibble.
+
+```{r}
+gapminder %>% 
+  group_by(country) %>% 
+  arrange(year) %>% 
+  mutate(inc_lifeExp = lifeExp - lag(lifeExp)) %>% 
+  filter(inc_lifeExp < 0) %>% 
+  DT::datatable()
+
+```
+
+## 1.4 `max()`
+
+_Requirement:_
+Filter `gapminder` in order to show the max GDP per capita experienced by each country.
+
+```{r}
+gapminder %>% 
+  group_by(country) %>% 
+  mutate(max_gdpPercap = max(gdpPercap)) %>%
+  filter(gdpPercap == max_gdpPercap) %>% 
+  select(country, year, max_gdpPercap) %>% 
+  DT::datatable()
+```
+
+## 1.5 `ggplot()`
+
+_Requirement:_
+Produce a scatterplot of Canada’s life expectancy vs. GDP per capita using ggplot2, **without defining a new variable**. That is, after filtering the `gapminder` data set, pipe it directly into the `ggplot()` function. Ensure GDP per capita is on a log scale.
+
+```{r}
+gapminder %>% 
+  filter(country == 'Canada') %>% 
+  ggplot(aes(gdpPercap, lifeExp)) + 
+  geom_point(alpha = 0.5, color = 'red') + 
+  scale_x_log10("GDP per capita", labels =  scales::dollar_format()) + 
+  ylab("Life expectancy (years)")
+
+```
+
+# Exercise 2: Explore variables with `dplyr`
+
+_Requirements_:
+Pick one categorical variable and one quantitative variable to explore. Answer the following questions using `dplyr`:
+
+- What are possible values (or range) of each variable?
+- What values are typical? What’s the spread? What’s the distribution?
+
+Here I choose the _categorical_ variable `'continent'` and the _quantitative_ variable `'lifeExp'`.
+
+## 2.1 **categorical** variable `'continent'`
+
+To investigate what possible values of such categorical variable are, we can study the variable as well as its frequency. 
+
+```{r}
+levels(gapminder$continent)
+```
+
+```{r}
+gapminder %>%
+  count(continent)
+```
+
+The above chunk shows numbers of observations for each continent. But if we check back the `gapminder` dataset, it is noticeable that each country of the corresponding continent contributes multiple records. Yet we are not sure whether numbers of countries within each continent have changed over time.
+
+```{r}
+gapminder %>% 
+  select(continent,year) %>% 
+  group_by(year) %>% 
+  count(continent)
+```
+
+This confirms that numbers of countries in each continent remain the same. Therefore, we can get rid of redundant repeats of each country. Here, we can learn that `continent` Africa contains 52 countries, Americas contains 25, Asia contains 33, Europe contains 30 and Oceania 2. To better view such result, we can visualize it. 
+
+```{r}
+gapminder %>% 
+  filter(year == 1952) %>% 
+  ggplot(aes(continent)) + 
+  geom_bar(fill = "blue", alpha = 0.5) +
+  labs(x="continent", y="number of countries")
+```
+
+## 2.2 **quantitative** variable `'lifeExp'`
+
+We can use `summary()` to have a very brief idea of the variable `'lifeExp'`.
+```{r}
+summary(gapminder$lifeExp)
+```
+
+We can also learn information about the standard deviation of these values.
+
+```{r}
+sd(gapminder$lifeExp)
+```
+
+The above information is very general, without distinguishing observations among years, countries and continents. Life expectancy might change over time and vary among countries. We can have a closer look at these values by grouping them into different subsets.
+
+```{r}
+gapminder %>% 
+  select(year, lifeExp) %>% 
+  group_by(year) %>% 
+  arrange(year) %>% 
+  summarize(min_lifeExp = min(lifeExp), max_lifeExp = max(lifeExp), mean_lifeExp = mean(lifeExp),median_lifeExp = median(lifeExp), sd_lifeExp = sd(lifeExp)) %>% 
+  knitr::kable()
+```
+
+Visual aids are always helpful to understant trends and diviations of values.
+```{r}
+gapminder %>% 
+  select(year, lifeExp) %>%
+  mutate(year= factor(year)) %>% 
+  ggplot(aes(year, lifeExp)) +
+  geom_boxplot(alpha = 0.5, fill = "green") +
+  xlab("Year") +
+  ylab("Life Expectancy")
+```
+
+# Exercise 3: Explore various plot types
+
+_Requirements:_
+Make the following plots that could be used for analyses:
+- A scatterplot of two quantitative variables.
+- One other plot besides a scatterplot.
+
+## 3.1 Scatterplot
+
+In _Exercise 2_, our exploration reveals that life expectancy changes over time. Whether life expectancy differs among continents is unclear. By studying relationships among these three variables, we might learn some interesting facts and see how things develop.
+
+```{r}
+gapminder %>% 
+  group_by(continent) %>% 
+  ggplot(aes(color = continent,x = year, y = lifeExp))+
+  geom_point(alpha = 0.4) +
+  xlab("year")+
+  ylab("life expectancy")
+```
+
+Here we can see that throughout the years Europe enjoys an extremely long life expectancy, followed by Americas, while life expectancy in Asia remains the shortest with gradual increases. 
+
+## 3.2 Other types of plots
+
+Instead of visualizing observations from every country in all continents, we can narrow down our choices. For example, we study how median life expectancy within each continent change over the years. 
+
+```{r}
+gapminder %>% 
+  group_by(continent,year) %>% 
+  mutate(md_lifeExp = median(lifeExp)) %>% 
+  ggplot(aes(x = year, y = md_lifeExp, color = continent))+
+  geom_line(size=1)+
+  xlab("year")+
+  ylab("median life expectancy of the continent")
+```
+
+# Optional Exercise: Recycling
+
+The analyst's propose was to obtain data of Rwanda and Afghanistan, and yet outputs of the following chunk did not fulfill the requirement. This is mainly due to the recycling of the vector `c("Rwanda", "Afghanistan")`, which results in observations of the two countries taking turns to be obtained year by year.
+
+```{r}
+filter(gapminder, country == c("Rwanda", "Afghanistan"))
+```
+
+To obtain the values properly, all we need to do is just to slightly modify the code.
+
+```{r}
+filter(gapminder, country == "Rwanda" | country == "Afghanistan") %>% 
+DT::datatable()
+```
+
