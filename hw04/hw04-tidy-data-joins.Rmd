@@ -1,0 +1,180 @@
+---
+title: "hw04-tidy-data-joins"
+author: "Haohui Zhong"
+date: "2019/10/8"
+output:
+  html_document: default
+  pdf_document: default
+  always_allow_html: yes
+---
+
+# Outline
+
+In this assignment, we are going to learn how to perform data tidying, reshaping and joining, using `dplyr` and `tidyr`. As usual, we need to load packages in the very beginning.
+
+```{r load, message = FALSE}
+library(gapminder)
+library(tidyverse)
+```
+
+# Exercise 1: Univariate Data Reshaping
+
+## Univariate Option 1
+
+### Widening
+
+_Requirements:_
+Make a tibble with one row per year, and columns for life expectancy for two or more countries.
+
+Here we choose Canada and China as the two countries that are to be shown in the output table in a nicer format. 
+
+```{r}
+univ_wide <- gapminder %>% 
+  filter(country == "Canada" | country == "China") %>%
+  select(year,country,lifeExp) %>% 
+  pivot_wider(id_cols = year, 
+              names_from = country,
+              names_prefix = "lifeExp_of_",
+              values_from = lifeExp)
+univ_wide %>%   
+  DT::datatable()
+  
+```
+
+The table above presents life expectancy of both countries in rows corresponding to each year.
+
+### Plotting
+
+_Requirements:_
+Take advantage of this new data shape to scatterplot life expectancy for one country against that of another.
+
+```{r}
+univ_wide %>% 
+  ggplot(aes(lifeExp_of_Canada,lifeExp_of_China))+
+  geom_point(aes(color = "orange"), size = 3)+
+  geom_text(aes(label = year), hjust =0.5, vjust = -0.25, size = 3)+
+  labs(title = "Life Expectancy for China against Canada",
+       x = "Life Expectancy in Canada",
+       y = "Life Expectancy in China") +
+  theme(legend.position = "none")
+```
+
+From the plot above, we can learn that life expectancy for China has been below that of Canada from 1952 to 2007. Both countries experience growth in life expectancy. There is a sharp drop in life expectancy in China in 1962, which might result from the great famine between 1960 and 1962.
+
+### Re-lengthening
+
+_Requirements:_
+Re-lengthen the data.
+
+```{r}
+univ_wide %>% 
+  pivot_longer(cols = -year,
+               names_to = "Country",
+               names_prefix = "lifeExp_of_",
+               values_to = "lifeExp") %>% 
+  DT::datatable()
+```
+
+The tibble goes back to the longer format, where Canada and China are grouped into the single column `country` and observed values of life expectancy for both countries into the column `lifeExp`.
+
+# Exercise 2: Multivariate Data Reshaping
+
+## Multivariate Option 1
+
+### Widening
+
+_Requirements:_
+Make a tibble with one row per year, and columns for life expectancy and GDP per capita (or two other numeric variables) for two or more countries.
+
+Here we choose France and Germany to study their life expectancy and GDP per capita. 
+
+```{r}
+mult_wide <- gapminder %>% 
+  filter(country == "France" | country == "Germany") %>%
+  select(country, year, lifeExp, gdpPercap) %>%
+  pivot_wider(id_cols = year, 
+              names_from = country, 
+              values_from = c(lifeExp, gdpPercap)) 
+mult_wide %>% 
+  DT::datatable()
+
+```
+
+### Re-lengthening
+
+_Requirements:_
+Re-lengthen the data.
+
+```{r}
+mult_wide %>% 
+  pivot_longer(cols = -year, 
+               names_to = c(".value", "country"), 
+               names_sep = "_") %>%
+  DT::datatable()
+```
+
+#Exercise 3: Table Joins
+
+First, we need to read in the made-up wedding guestlist and email addresses using the following lines.
+
+```{r}
+guest <- read_csv("https://raw.githubusercontent.com/STAT545-UBC/Classroom/master/data/wedding/attend.csv")
+email <- read_csv("https://raw.githubusercontent.com/STAT545-UBC/Classroom/master/data/wedding/emails.csv")
+```
+
+Let's have a brief idea of what these two tibbles contain.
+```{r}
+guest %>% 
+  head() %>% 
+  knitr::kable()
+
+email %>% 
+  head() %>% 
+  knitr::kable()
+```
+
+## 3.1
+_Requirements:_
+For each guest in the `guest` tibble, add a column for email address, which can be found in the `email` tibble.
+
+First, we need to use `separate_rows()` function to reshape the `email` tibble.
+
+```{r}
+email_sep <- email %>% 
+  separate_rows(guest,sep = ", ") 
+email_sep %>% 
+  DT::datatable()
+```
+
+Now with an `email` tibble in a tidy format, we can perform a `left join` on the `guest` tibble to add an `email` column.
+
+```{r}
+guest %>%
+  left_join(email_sep, by = c("name" = "guest")) %>%
+  DT::datatable()
+  
+```
+
+## 3.2
+_Requirements:_
+Pick out guests that we have emails for and yet are not on the guestlist.
+
+```{r}
+email_sep %>% 
+  anti_join(guest, by = c("guest" = "name")) %>% 
+  DT::datatable()
+```
+
+There are three guests, namely Turner Jones, Albert Marshall and Vivian Marshall, in the email list missing from the guestlist.
+
+## 3.3
+_Requirements:_
+Create a guestlist that includes everyone we have emails for (in addition to those on the original guestlist).
+
+```{r}
+guest %>% 
+  full_join(email_sep, by = c("name" = "guest")) %>% 
+  DT::datatable()
+```
+
+Now with the help of `full_join` function, we obtain a list containing all guests.
