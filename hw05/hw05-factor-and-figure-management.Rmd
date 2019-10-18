@@ -22,10 +22,26 @@ library(here)
 _Requirements:_ 
 Explain the value of the here::here package with no more than 250 words.
 
+***
+
 The `here::here` function is very powerful for setting paths, mainly for the reasons listed below:
 
-* Programmers can manage their sub-directories easily using the `here::here` function.
-In a R project
+* The `here::here` function let programmers manage their sub-directories easily.
+
+In a R project, the function recognizes the project root. But `here::here` is more than this. A .Rproj file is not necessary, since `here::here` works even in a non-project environment and comes before a project file.
+
+* The `here::here` function works across different operating systems.
+
+Every system has its own rules regarding to path. It is good to know them, but still people might forget or get lost. `here::here` always gives you the right answer to paths you should use in certain system.
+
+* The `here::here` function adds another layer of feasibility to remote collaboration.
+
+The `here::here` function sets your files free from your extremely personalized 'local path' jail and spares your collaborators from rewriting absolute paths on their own working directory. 
+The first step to be a good citizen: use `here::here`.
+
+* The `here::here` function could be someone's life saver.
+
+Remember that Jenny's warning of setting those computers on fire? 
 
 
 # Exercise 2: : Factor management
@@ -236,6 +252,7 @@ grid.arrange(old, new, ncol=2)
 
 ```
 
+By comparing the two plots side by side, we can definely see a difference, although the new one is still not ready for a journal paper. Of course, we can briefly tell the range of life expectancy among countries within each continent form the left plot (old), but we are clueless about the distribution of the data and those summarized information. One key component I change is that I excluded the data of Oceania, since the limited number of data makes it really hard to look into density.
 
 
 
@@ -251,9 +268,4 @@ ggsave(filename = here::here("lifeExpyrcon.png"), plot=new)
 
 Now reload the plot we save.
 ![_continent life expectancy distribution by year_](lifeExpyrcon.png)
-
-
-
-
-
 
